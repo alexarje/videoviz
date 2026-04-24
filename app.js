@@ -103,9 +103,17 @@ function drawVideogramFrame() {
   // Scroll buffer up and add new row at the end
   horizBuffer.copyWithin(0, videoWidth * 4);
   horizBuffer.set(averagedRow, (duration - 1) * videoWidth * 4);
-  // Draw buffer to canvas
+  // Draw buffer to canvas, mirrored if needed
   const horizImage = new ImageData(new Uint8ClampedArray(horizBuffer), videoWidth, duration);
-  videogramCtx.putImageData(horizImage, 0, 0);
+  if (mirrored) {
+    videogramCtx.save();
+    videogramCtx.translate(videoWidth, 0);
+    videogramCtx.scale(-1, 1);
+    videogramCtx.putImageData(horizImage, 0, 0);
+    videogramCtx.restore();
+  } else {
+    videogramCtx.putImageData(horizImage, 0, 0);
+  }
 
   // Vertical videogram (column-averaged)
   const averagedCol = new Uint8ClampedArray(videoHeight * 4);
@@ -195,8 +203,7 @@ function stopCamera() {
 mirrorCheckbox.addEventListener("change", () => {
   mirrored = mirrorCheckbox.checked;
   cameraVideo.classList.toggle("mirrored", mirrored);
-  // Mirror the horizontal videogram display to match the video
-  videogramCanvas.classList.toggle("mirrored", mirrored);
+  // No CSS mirroring for horizontal videogram; handled in drawVideogramFrame
 });
 
 toggleCameraBtn.addEventListener("click", () => {
