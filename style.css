@@ -118,10 +118,26 @@ button:disabled {
   font-weight: 700;
 }
 
+
 .panels {
   display: grid;
-  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
   gap: 1rem;
+  align-items: start;
+}
+
+.panel-video {
+  grid-column: 1;
+  grid-row: 1;
+}
+.panel-videogram-vert {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.panel-videogram-horiz {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .panel {
@@ -174,5 +190,18 @@ canvas {
 
   .panels {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .panel-video {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .panel-videogram-vert {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .panel-videogram-horiz {
+    grid-column: 1;
+    grid-row: 3;
   }
 }

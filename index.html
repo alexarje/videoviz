@@ -25,15 +25,21 @@
         </label>
       </section>
 
+
       <section class="panels" aria-live="polite">
-        <article class="panel">
+        <article class="panel panel-video">
           <h2>Camera Feed</h2>
           <video id="cameraVideo" autoplay playsinline muted></video>
         </article>
 
-        <article class="panel">
-          <h2>Videogram (Rolling Window)</h2>
-          <canvas id="videogramCanvas" width="320" height="240"></canvas>
+        <article class="panel panel-videogram-vert">
+          <h2>Videogram (Vertical Avg)</h2>
+          <canvas id="videogramCanvasVert" width="80" height="240"></canvas>
+        </article>
+
+        <article class="panel panel-videogram-horiz">
+          <h2>Videogram (Horizontal Avg)</h2>
+          <canvas id="videogramCanvas" width="320" height="80"></canvas>
         </article>
       </section>
 

@@ -3,12 +3,14 @@ const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
+const videogramCanvasVert = document.getElementById("videogramCanvasVert");
 const statusText = document.getElementById("statusText");
 const sampleWidthRange = document.getElementById("sampleWidthRange");
 const sampleWidthValue = document.getElementById("sampleWidthValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
 
 const videogramCtx = videogramCanvas.getContext("2d", { willReadFrequently: true });
+const videogramCtxVert = videogramCanvasVert.getContext("2d", { willReadFrequently: true });
 const sampleCanvas = document.createElement("canvas");
 const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
 
@@ -35,9 +37,17 @@ function applySampleSize(width) {
   sampleCanvas.width = sampleWidth;
   sampleCanvas.height = sampleHeight;
 
+  // Horizontal videogram (row-averaged): width = sampleWidth, height = 80
   videogramCanvas.width = sampleWidth;
+  videogramCanvas.height = 80;
   videogramCtx.fillStyle = "#000";
   videogramCtx.fillRect(0, 0, videogramCanvas.width, videogramCanvas.height);
+
+  // Vertical videogram (column-averaged): width = 80, height = sampleHeight
+  videogramCanvasVert.width = 80;
+  videogramCanvasVert.height = sampleHeight;
+  videogramCtxVert.fillStyle = "#000";
+  videogramCtxVert.fillRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
 
   sampleWidthValue.textContent = `${sampleWidth} px`;
 }
@@ -61,21 +71,16 @@ function drawVideogramFrame() {
   const frame = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
   const data = frame.data;
 
-  // For each x-position, average RGB values across every row in the frame.
+  // Horizontal videogram (row-averaged, as before)
   const averagedRow = new Uint8ClampedArray(sampleCanvas.width * 4);
-
   for (let x = 0; x < sampleCanvas.width; x += 1) {
-    let r = 0;
-    let g = 0;
-    let b = 0;
-
+    let r = 0, g = 0, b = 0;
     for (let y = 0; y < sampleCanvas.height; y += 1) {
       const idx = (y * sampleCanvas.width + x) * 4;
       r += data[idx];
       g += data[idx + 1];
       b += data[idx + 2];
     }
-
     const pixelIndex = x * 4;
     const scale = sampleCanvas.height;
     averagedRow[pixelIndex] = Math.round(r / scale);
@@ -83,8 +88,7 @@ function drawVideogramFrame() {
     averagedRow[pixelIndex + 2] = Math.round(b / scale);
     averagedRow[pixelIndex + 3] = 255;
   }
-
-  // Always update the videogram buffer left-to-right, not mirrored
+  // Shift up and draw new row at bottom
   videogramCtx.drawImage(
     videogramCanvas,
     0,
@@ -96,9 +100,43 @@ function drawVideogramFrame() {
     videogramCanvas.width,
     videogramCanvas.height - 1
   );
-
   const strip = new ImageData(averagedRow, sampleCanvas.width, 1);
   videogramCtx.putImageData(strip, 0, videogramCanvas.height - 1);
+
+  // Vertical videogram (column-averaged)
+  const averagedCol = new Uint8ClampedArray(sampleCanvas.height * 4);
+  for (let y = 0; y < sampleCanvas.height; y += 1) {
+    let r = 0, g = 0, b = 0;
+    for (let x = 0; x < sampleCanvas.width; x += 1) {
+      const idx = (y * sampleCanvas.width + x) * 4;
+      r += data[idx];
+      g += data[idx + 1];
+      b += data[idx + 2];
+    }
+    const pixelIndex = y * 4;
+    const scale = sampleCanvas.width;
+    averagedCol[pixelIndex] = Math.round(r / scale);
+    averagedCol[pixelIndex + 1] = Math.round(g / scale);
+    averagedCol[pixelIndex + 2] = Math.round(b / scale);
+    averagedCol[pixelIndex + 3] = 255;
+  }
+  // Shift left and draw new column at right
+  videogramCtxVert.drawImage(
+    videogramCanvasVert,
+    1,
+    0,
+    videogramCanvasVert.width - 1,
+    videogramCanvasVert.height,
+    0,
+    0,
+    videogramCanvasVert.width - 1,
+    videogramCanvasVert.height
+  );
+  const colStrip = new ImageData(1, sampleCanvas.height);
+  for (let i = 0; i < averagedCol.length; i++) {
+    colStrip.data[i] = averagedCol[i];
+  }
+  videogramCtxVert.putImageData(colStrip, videogramCanvasVert.width - 1, 0);
 
   rafId = requestAnimationFrame(drawVideogramFrame);
 }
