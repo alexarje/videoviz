@@ -99,9 +99,9 @@ function drawVideogramFrame() {
     averagedRow[pixelIndex + 2] = Math.round(b / scale);
     averagedRow[pixelIndex + 3] = 255;
   }
-  // Scroll buffer up and add new row at the end
-  horizBuffer.copyWithin(0, videoWidth * 4);
-  horizBuffer.set(averagedRow, (duration - 1) * videoWidth * 4);
+  // Scroll buffer down and add new row at the top (reverse direction)
+  horizBuffer.copyWithin(videoWidth * 4, 0);
+  horizBuffer.set(averagedRow, 0);
   // Draw buffer to canvas, mirrored if needed
   const horizImage = new ImageData(new Uint8ClampedArray(horizBuffer), videoWidth, duration);
   if (mirrored) {
@@ -131,10 +131,10 @@ function drawVideogramFrame() {
     averagedCol[pixelIndex + 2] = Math.round(b / scale);
     averagedCol[pixelIndex + 3] = 255;
   }
-  // Scroll buffer left and add new column at the end
+  // Scroll buffer right and add new column at the left (reverse direction)
   for (let y = 0; y < videoHeight; y++) {
-    vertBuffer.copyWithin(y * duration * 4, y * duration * 4 + 4, (y + 1) * duration * 4);
-    vertBuffer.set(averagedCol.slice(y * 4, y * 4 + 4), (y * duration + (duration - 1)) * 4);
+    vertBuffer.copyWithin(y * duration * 4 + 4, y * duration * 4, (y + 1) * duration * 4 - 4);
+    vertBuffer.set(averagedCol.slice(y * 4, y * 4 + 4), y * duration * 4);
   }
   // Draw buffer to canvas
   const vertImage = new ImageData(new Uint8ClampedArray(vertBuffer), duration, videoHeight);
