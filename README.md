@@ -60,6 +60,42 @@ This creates a temporal image where vertical position encodes time progression.
 - Camera access requires user permission.
 - If permission is denied, the UI displays a status message and remains usable.
 
+## Development
+
+Use this lightweight workflow while iterating on the app.
+
+### Start a local server
+
+```bash
+python3 -m http.server 8080
+```
+
+Open `http://localhost:8080` and keep browser DevTools open to watch console errors.
+
+### Verify changes
+
+1. Click **Start Camera** and confirm permission prompt appears.
+2. Confirm camera preview is visible.
+3. Confirm the videogram updates continuously while streaming.
+4. Click **Stop Camera** and confirm the stream ends without errors.
+5. Resize browser width and confirm layout remains usable on narrow screens.
+
+### Capture a screenshot for PRs
+
+Include one screenshot that shows:
+
+- Camera panel
+- Videogram panel
+- Current status text
+
+### Suggested commit flow
+
+```bash
+git add .
+git commit -m "Describe your change"
+git push
+```
+
 ## License
 
 See `LICENSE`.
