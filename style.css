@@ -178,7 +178,6 @@ video {
 
 #videogramCanvasVert {
   display: block;
-  width: 320px !important;
   max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
@@ -188,7 +187,6 @@ video {
 
 #videogramCanvas {
   display: block;
-  width: 320px !important;
   max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);

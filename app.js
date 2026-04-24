@@ -46,21 +46,20 @@ function applySampleSize() {
   vertBuffer = new Uint8ClampedArray(duration * videoHeight * 4);
   videogramCtxVert.clearRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
 
-  // Set the width and height of the vertical videogram canvas in the DOM to fixed 320px width
-  videogramCanvasVert.style.width = '320px';
-  videogramCanvasVert.style.height = cameraVideo.offsetHeight + 'px';
+  // Scale the canvases visually according to frame number (duration), proportional to video window
+  // Horizontal: height scales with duration
+  const scaleY = duration / videoHeight;
+  videogramCanvas.style.width = videoWidth + 'px';
+  videogramCanvas.style.height = (videoHeight * scaleY) + 'px';
+
+  // Vertical: width scales with duration
+  const scaleX = duration / videoWidth;
+  videogramCanvasVert.style.width = (videoWidth * scaleX) + 'px';
+  videogramCanvasVert.style.height = videoHeight + 'px';
 }
 function applyDuration(newDuration) {
   duration = Number(newDuration);
-  // Resize videogram canvases and buffers
-  videogramCanvas.height = duration;
-  horizBuffer = new Uint8ClampedArray(videoWidth * duration * 4);
-  videogramCtx.clearRect(0, 0, videogramCanvas.width, videogramCanvas.height);
-
-  videogramCanvasVert.width = duration;
-  vertBuffer = new Uint8ClampedArray(duration * videoHeight * 4);
-  videogramCtxVert.clearRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
-
+  applySampleSize();
   durationValue.textContent = duration;
 }
 
@@ -164,10 +163,7 @@ async function startCamera() {
 
     // After video is playing, update the vertical videogram canvas width and height to fixed 320px width
     setTimeout(() => {
-      videogramCanvasVert.style.width = '320px';
-      videogramCanvasVert.style.height = cameraVideo.offsetHeight + 'px';
-      videogramCanvas.style.width = '320px';
-      videogramCanvas.style.height = videogramCanvas.height + 'px';
+      applySampleSize();
     }, 100);
 
     processing = true;
