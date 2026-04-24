@@ -1,6 +1,5 @@
 
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
+const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
@@ -33,8 +32,7 @@ function updateStatus(message) {
 }
 
 function setButtons(isStreaming) {
-  startBtn.disabled = isStreaming;
-  stopBtn.disabled = !isStreaming;
+  toggleCameraBtn.textContent = isStreaming ? "Stop Camera" : "Start Camera";
   sampleWidthRange.disabled = isStreaming;
 }
 
@@ -202,8 +200,13 @@ mirrorCheckbox.addEventListener("change", () => {
   videogramCanvas.classList.toggle("mirrored", mirrored);
 });
 
-startBtn.addEventListener("click", startCamera);
-stopBtn.addEventListener("click", stopCamera);
+toggleCameraBtn.addEventListener("click", () => {
+  if (processing) {
+    stopCamera();
+  } else {
+    startCamera();
+  }
+});
 sampleWidthRange.addEventListener("input", (event) => {
   applySampleSize(event.target.value);
 });
