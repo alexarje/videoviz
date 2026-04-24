@@ -52,9 +52,9 @@ function applySampleSize() {
   videogramCanvas.style.width = videoWidth + 'px';
   videogramCanvas.style.height = (videoHeight * scaleY) + 'px';
 
-  // Vertical: width scales with duration, keeping height fixed
+  // Vertical: height always matches video, width scales with duration
   videogramCanvasVert.style.height = videoHeight + 'px';
-  videogramCanvasVert.style.width = (duration * videoWidth / videoHeight) + 'px';
+  videogramCanvasVert.style.width = duration + 'px';
 }
 function applyDuration(newDuration) {
   duration = Number(newDuration);
