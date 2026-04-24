@@ -137,6 +137,10 @@ button:disabled {
 .panel-videogram-vert {
   grid-column: 2;
   grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 .panel-videogram-horiz {
   grid-column: 1;
@@ -160,8 +164,7 @@ button:disabled {
   color: var(--text-muted);
 }
 
-video,
-canvas {
+video {
   display: block;
   width: 100%;
   border-radius: 0.7rem;
@@ -169,6 +172,25 @@ canvas {
   background: #000;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+}
+
+#videogramCanvasVert {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(125, 249, 215, 0.28);
+  background: #000;
+  object-fit: contain;
+}
+
+#videogramCanvas {
+  display: block;
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(125, 249, 215, 0.28);
+  background: #000;
+  object-fit: contain;
 }
 
 .status {
