@@ -198,12 +198,8 @@ function stopCamera() {
 mirrorCheckbox.addEventListener("change", () => {
   mirrored = mirrorCheckbox.checked;
   cameraVideo.classList.toggle("mirrored", mirrored);
-  // Only mirror the display of the videogram, not the buffer update
-  if (mirrored) {
-    videogramCanvas.classList.add("mirrored");
-  } else {
-    videogramCanvas.classList.remove("mirrored");
-  }
+  // Mirror the horizontal videogram display to match the video
+  videogramCanvas.classList.toggle("mirrored", mirrored);
 });
 
 startBtn.addEventListener("click", startCamera);
