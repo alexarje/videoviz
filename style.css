@@ -1,3 +1,17 @@
+.video-stack-inner {
+  position: relative;
+  width: 320px;
+  height: 240px;
+}
+.video-stack-inner video,
+.video-stack-inner canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 240px;
+  display: block;
+}
 .mirrored {
   transform: scaleX(-1);
 }
