@@ -54,7 +54,8 @@ function applySampleSize(width) {
   vertBuffer = new Uint8ClampedArray(duration * videoHeight * 4);
   videogramCtxVert.clearRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
 
-  // Set the height of the vertical videogram canvas in the DOM to match the video
+  // Set the width and height of the vertical videogram canvas in the DOM to match the video
+  videogramCanvasVert.style.width = cameraVideo.offsetWidth + 'px';
   videogramCanvasVert.style.height = cameraVideo.offsetHeight + 'px';
 
   sampleWidthValue.textContent = `${videoWidth} px`;
@@ -163,8 +164,9 @@ async function startCamera() {
     cameraVideo.srcObject = stream;
     await cameraVideo.play();
 
-    // After video is playing, update the vertical videogram canvas height to match video
+    // After video is playing, update the vertical videogram canvas width and height to match video
     setTimeout(() => {
+      videogramCanvasVert.style.width = cameraVideo.offsetWidth + 'px';
       videogramCanvasVert.style.height = cameraVideo.offsetHeight + 'px';
     }, 100);
 
