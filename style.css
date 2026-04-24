@@ -76,7 +76,7 @@ body {
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   padding: 0.5rem 0.5rem 0.5rem 0.5rem;
   background: var(--surface);
@@ -85,8 +85,7 @@ body {
   box-shadow: var(--shadow);
   backdrop-filter: blur(6px);
   width: auto;
-  margin: 0;
-  min-width: 0;
+  margin: 0 auto;
 }
 /* Remove horizontal margin and width for consistent spacing */
 .panel-video {
