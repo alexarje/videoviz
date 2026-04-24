@@ -65,23 +65,29 @@ body {
 
 
 
+
 .main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: flex-start;
+  align-items: stretch;
+  margin-top: 2rem;
+}
+
+.top-row {
   display: flex;
   flex-direction: row;
   gap: 2rem;
   justify-content: center;
   align-items: flex-start;
-  margin-top: 2rem;
 }
 
-.video-block {
-  order: 1;
-}
-.videogram-vert-block {
-  order: 2;
+
+.video-block, .videogram-vert-block {
+  flex: 0 0 auto;
 }
 .videogram-horiz-block {
-  order: 3;
   width: 100%;
 }
 
@@ -104,12 +110,12 @@ body {
 
 @media (max-width: 900px) {
   .main-content {
+    gap: 1rem;
+  }
+  .top-row {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
-  }
-  .video-block, .videogram-vert-block, .videogram-horiz-block {
-    order: unset;
   }
   .videogram-horiz-block {
     margin-top: 0;
