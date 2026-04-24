@@ -96,6 +96,22 @@ git commit -m "Describe your change"
 git push
 ```
 
+## Deploy to GitHub Pages
+
+This repository is configured to deploy automatically with GitHub Actions whenever `main` is updated.
+
+Deployment workflow:
+
+- Workflow file: `.github/workflows/deploy-pages.yml`
+- Trigger: push to `main` (or manual run from Actions tab)
+- Publish target: GitHub Pages environment
+
+After deployment, the site URL will be:
+
+- `https://alexarje.github.io/videoviz/`
+
+If Pages is not active yet in repository settings, enable it once by selecting **Build and deployment** source as **GitHub Actions**.
+
 ## License
 
 See `LICENSE`.
