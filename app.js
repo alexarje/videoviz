@@ -49,7 +49,7 @@ function drawVideogramFrame() {
     return;
   }
 
-  // Mirror the sample if needed
+  // Mirror the sample if needed (for video only)
   sampleCtx.save();
   if (mirrored) {
     sampleCtx.translate(sampleCanvas.width, 0);
@@ -84,11 +84,7 @@ function drawVideogramFrame() {
     averagedRow[pixelIndex + 3] = 255;
   }
 
-  videogramCtx.save();
-  if (mirrored) {
-    videogramCtx.translate(videogramCanvas.width, 0);
-    videogramCtx.scale(-1, 1);
-  }
+  // Always update the videogram buffer left-to-right, not mirrored
   videogramCtx.drawImage(
     videogramCanvas,
     0,
@@ -103,7 +99,6 @@ function drawVideogramFrame() {
 
   const strip = new ImageData(averagedRow, sampleCanvas.width, 1);
   videogramCtx.putImageData(strip, 0, videogramCanvas.height - 1);
-  videogramCtx.restore();
 
   rafId = requestAnimationFrame(drawVideogramFrame);
 }
@@ -155,10 +150,16 @@ function stopCamera() {
 }
 
 
+
 mirrorCheckbox.addEventListener("change", () => {
   mirrored = mirrorCheckbox.checked;
   cameraVideo.classList.toggle("mirrored", mirrored);
-  videogramCanvas.classList.toggle("mirrored", mirrored);
+  // Only mirror the display of the videogram, not the buffer update
+  if (mirrored) {
+    videogramCanvas.classList.add("mirrored");
+  } else {
+    videogramCanvas.classList.remove("mirrored");
+  }
 });
 
 startBtn.addEventListener("click", startCamera);
