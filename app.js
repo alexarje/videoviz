@@ -27,6 +27,26 @@ if (diffCheckbox) {
   });
 }
 
+const diffThreshold = document.getElementById("diffThreshold");
+const diffThresholdValue = document.getElementById("diffThresholdValue");
+const normalizeCheckbox = document.getElementById("normalizeCheckbox");
+let threshold = 24;
+let normalize = true;
+if (diffThreshold) {
+  diffThreshold.addEventListener("input", (e) => {
+    threshold = Number(e.target.value);
+    if (diffThresholdValue) diffThresholdValue.textContent = threshold;
+  });
+  threshold = Number(diffThreshold.value);
+  if (diffThresholdValue) diffThresholdValue.textContent = threshold;
+}
+if (normalizeCheckbox) {
+  normalizeCheckbox.addEventListener("change", (e) => {
+    normalize = e.target.checked;
+  });
+  normalize = normalizeCheckbox.checked;
+}
+
 const videogramCtx = videogramCanvas.getContext("2d", { willReadFrequently: true });
 const videogramCtxVert = videogramCanvasVert.getContext("2d", { willReadFrequently: true });
 const sampleCanvas = document.createElement("canvas");
@@ -105,17 +125,30 @@ function drawVideogramFrame() {
   let data = frame.data;
 
 
-  // Frame differencing
+  // Frame differencing with threshold and normalization
   let diffData = data;
   if (frameDifferencing) {
     if (prevFrame) {
       let prevData = prevFrame.data;
       diffData = new Uint8ClampedArray(data.length);
+      let maxDiff = 0;
       for (let i = 0; i < data.length; i += 4) {
-        diffData[i] = Math.abs(data[i] - prevData[i]);
-        diffData[i + 1] = Math.abs(data[i + 1] - prevData[i + 1]);
-        diffData[i + 2] = Math.abs(data[i + 2] - prevData[i + 2]);
+        // Compute per-pixel difference (grayscale)
+        const dr = Math.abs(data[i] - prevData[i]);
+        const dg = Math.abs(data[i + 1] - prevData[i + 1]);
+        const db = Math.abs(data[i + 2] - prevData[i + 2]);
+        let diff = (dr + dg + db) / 3;
+        if (diff > maxDiff) maxDiff = diff;
+        // Threshold
+        diff = diff >= threshold ? diff : 0;
+        diffData[i] = diffData[i + 1] = diffData[i + 2] = diff;
         diffData[i + 3] = 255;
+      }
+      // Normalize if enabled
+      if (normalize && maxDiff > 0) {
+        for (let i = 0; i < diffData.length; i += 4) {
+          diffData[i] = diffData[i + 1] = diffData[i + 2] = Math.round((diffData[i] / maxDiff) * 255);
+        }
       }
       // Show difference in the visible diff video canvas
       if (diffVideoCtx && diffVideoCanvas && diffVideoCanvas.style.display !== "none") {
