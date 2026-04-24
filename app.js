@@ -169,4 +169,4 @@ sampleWidthRange.addEventListener("input", (event) => {
 });
 
 applySampleSize(sampleWidthRange.value);
-updateStatus("Camera is idle. Click Start Camera.");
+updateStatus("");
