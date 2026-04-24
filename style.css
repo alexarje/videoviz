@@ -100,7 +100,8 @@ button:disabled {
   opacity: 0.56;
 }
 
-.density-control {
+
+.density-control, .duration-control {
   justify-self: end;
   display: flex;
   gap: 0.6rem;
@@ -108,11 +109,13 @@ button:disabled {
   color: var(--text-muted);
 }
 
-#sampleWidthRange {
+
+#sampleWidthRange, #durationRange {
   width: min(300px, 40vw);
 }
 
-#sampleWidthValue {
+
+#sampleWidthValue, #durationValue {
   min-width: 56px;
   color: var(--text-main);
   font-weight: 700;
