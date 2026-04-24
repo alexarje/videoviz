@@ -70,6 +70,7 @@ body {
   gap: 1rem;
   align-items: start;
 }
+/* Remove horizontal margin and width for consistent spacing */
 .panel-videogram-vert {
   grid-column: 1;
   grid-row: 1;
@@ -83,9 +84,10 @@ body {
   border-radius: 1rem;
   box-shadow: var(--shadow);
   backdrop-filter: blur(6px);
-  width: fit-content;
-  margin: 0 auto;
+  width: auto;
+  margin: 0;
 }
+/* Remove horizontal margin and width for consistent spacing */
 .panel-video {
   grid-column: 2;
   grid-row: 1;
@@ -99,9 +101,10 @@ body {
   border-radius: 1rem;
   box-shadow: var(--shadow);
   backdrop-filter: blur(6px);
-  width: fit-content;
-  margin: 0 auto;
+  width: auto;
+  margin: 0;
 }
+/* Remove horizontal margin and width for consistent spacing */
 .panel-videogram-horiz {
   grid-column: 1 / span 2;
   grid-row: 2;
@@ -115,8 +118,8 @@ body {
   border-radius: 1rem;
   box-shadow: var(--shadow);
   backdrop-filter: blur(6px);
-  width: fit-content;
-  margin: 0 auto;
+  width: auto;
+  margin: 0;
 }
 #stopBtn {
   background: rgba(255, 109, 109, 0.14);
