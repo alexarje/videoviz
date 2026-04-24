@@ -6,6 +6,8 @@ const durationRange = document.getElementById("durationRange");
 const durationValue = document.getElementById("durationValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
 const diffCheckbox = document.getElementById("diffCheckbox");
+const diffVideoCanvas = document.getElementById("diffVideoCanvas");
+const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
 let frameDifferencing = false;
 let prevFrame = null;
 if (diffCheckbox) {
@@ -13,8 +15,6 @@ if (diffCheckbox) {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
     // Show/hide video and diff canvas
-    const diffVideoCanvas = document.getElementById("diffVideoCanvas");
-    const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
     if (diffVideoCanvas && cameraVideo) {
       if (frameDifferencing) {
         cameraVideo.style.display = "none";
