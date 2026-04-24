@@ -14,21 +14,27 @@ let prevFrame = null;
 const FRAME_DIFF_AVG_COUNT = 4; // Number of diffs to average
 let diffBuffer = [];
 
+function syncVideoDiffVisibility() {
+  if (diffVideoCanvas && cameraVideo) {
+    if (frameDifferencing) {
+      cameraVideo.style.display = "none";
+      diffVideoCanvas.style.display = "block";
+    } else {
+      cameraVideo.style.display = "block";
+      diffVideoCanvas.style.display = "none";
+    }
+  }
+}
+
+// Initial state on load
+syncVideoDiffVisibility();
+
 if (diffCheckbox) {
   diffCheckbox.addEventListener("change", (e) => {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
     resetDiffBuffer();
-    // Show/hide video and diff canvas
-    if (diffVideoCanvas && cameraVideo) {
-      if (frameDifferencing) {
-        cameraVideo.style.display = "none";
-        diffVideoCanvas.style.display = "block";
-      } else {
-        cameraVideo.style.display = "block";
-        diffVideoCanvas.style.display = "none";
-      }
-    }
+    syncVideoDiffVisibility();
   });
 }
 
@@ -283,15 +289,14 @@ async function startCamera() {
     // After video is playing, update the vertical videogram canvas width and height to fixed 320px width
     setTimeout(() => {
       applySampleSize();
+      syncVideoDiffVisibility(); // Ensure correct video/canvas is visible after camera starts
     }, 100);
 
     processing = true;
     setButtons(true);
-    // updateStatus("Camera started. Building rolling videogram from each frame.");
     drawVideogramFrame();
   } catch (error) {
     console.error(error);
-    // updateStatus("Unable to access camera. Check browser permissions and try again.");
   }
 }
 
@@ -310,7 +315,6 @@ function stopCamera() {
 
   cameraVideo.srcObject = null;
   setButtons(false);
-  // updateStatus("Camera stopped.");
 }
 
 
