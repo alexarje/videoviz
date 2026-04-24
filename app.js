@@ -3,8 +3,6 @@ const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
-const sampleWidthRange = document.getElementById("sampleWidthRange");
-const sampleWidthValue = document.getElementById("sampleWidthValue");
 const durationRange = document.getElementById("durationRange");
 const durationValue = document.getElementById("durationValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
@@ -20,8 +18,8 @@ let stream = null;
 let rafId = null;
 let processing = false;
 let mirrored = false;
-let videoWidth = 320;
-let videoHeight = 240;
+const videoWidth = 320;
+const videoHeight = 240;
 let duration = 80;
 let horizBuffer = null;
 let vertBuffer = null;
@@ -30,15 +28,9 @@ function updateStatus(message) {}
 
 function setButtons(isStreaming) {
   toggleCameraBtn.textContent = isStreaming ? "Stop Camera" : "Start Camera";
-  sampleWidthRange.disabled = isStreaming;
 }
 
-function applySampleSize(width) {
-  const sampleWidth = Number(width);
-  const sampleHeight = Math.max(72, Math.round(sampleWidth * 0.75));
-  videoWidth = sampleWidth;
-  videoHeight = sampleHeight;
-
+function applySampleSize() {
   sampleCanvas.width = videoWidth;
   sampleCanvas.height = videoHeight;
 
@@ -57,8 +49,6 @@ function applySampleSize(width) {
   // Set the width and height of the vertical videogram canvas in the DOM to fixed 320px width
   videogramCanvasVert.style.width = '320px';
   videogramCanvasVert.style.height = cameraVideo.offsetHeight + 'px';
-
-  sampleWidthValue.textContent = `${videoWidth} px`;
 }
 function applyDuration(newDuration) {
   duration = Number(newDuration);
@@ -216,12 +206,9 @@ toggleCameraBtn.addEventListener("click", () => {
     startCamera();
   }
 });
-sampleWidthRange.addEventListener("input", (event) => {
-  applySampleSize(event.target.value);
-});
 durationRange.addEventListener("input", (event) => {
   applyDuration(event.target.value);
 });
 
-applySampleSize(sampleWidthRange.value);
+applySampleSize();
 applyDuration(durationRange.value);
