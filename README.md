@@ -1,5 +1,3 @@
-git commit -m "Describe your change"
-git push
 # VideoViz
 
 Live camera visualization with dual videograms.
