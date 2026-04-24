@@ -3,7 +3,6 @@ const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
-const statusText = document.getElementById("statusText");
 const sampleWidthRange = document.getElementById("sampleWidthRange");
 const sampleWidthValue = document.getElementById("sampleWidthValue");
 const durationRange = document.getElementById("durationRange");
@@ -27,9 +26,7 @@ let duration = 80;
 let horizBuffer = null;
 let vertBuffer = null;
 
-function updateStatus(message) {
-  statusText.textContent = message;
-}
+function updateStatus(message) {}
 
 function setButtons(isStreaming) {
   toggleCameraBtn.textContent = isStreaming ? "Stop Camera" : "Start Camera";
@@ -173,11 +170,11 @@ async function startCamera() {
 
     processing = true;
     setButtons(true);
-    updateStatus("Camera started. Building rolling videogram from each frame.");
+    // updateStatus("Camera started. Building rolling videogram from each frame.");
     drawVideogramFrame();
   } catch (error) {
     console.error(error);
-    updateStatus("Unable to access camera. Check browser permissions and try again.");
+    // updateStatus("Unable to access camera. Check browser permissions and try again.");
   }
 }
 
@@ -196,7 +193,7 @@ function stopCamera() {
 
   cameraVideo.srcObject = null;
   setButtons(false);
-  updateStatus("Camera stopped.");
+  // updateStatus("Camera stopped.");
 }
 
 
@@ -224,4 +221,3 @@ durationRange.addEventListener("input", (event) => {
 
 applySampleSize(sampleWidthRange.value);
 applyDuration(durationRange.value);
-updateStatus("");
