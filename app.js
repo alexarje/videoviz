@@ -94,24 +94,34 @@ function drawVideogramFrame() {
   let frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
   let data = frame.data;
 
+
   // Frame differencing
+  let diffData = data;
   if (frameDifferencing) {
     if (prevFrame) {
       let prevData = prevFrame.data;
+      diffData = new Uint8ClampedArray(data.length);
       for (let i = 0; i < data.length; i += 4) {
-        // Compute absolute difference for each channel
-        data[i] = Math.abs(data[i] - prevData[i]);
-        data[i + 1] = Math.abs(data[i + 1] - prevData[i + 1]);
-        data[i + 2] = Math.abs(data[i + 2] - prevData[i + 2]);
-        data[i + 3] = 255;
+        diffData[i] = Math.abs(data[i] - prevData[i]);
+        diffData[i + 1] = Math.abs(data[i + 1] - prevData[i + 1]);
+        diffData[i + 2] = Math.abs(data[i + 2] - prevData[i + 2]);
+        diffData[i + 3] = 255;
       }
       // Show difference in video preview
-      sampleCtx.putImageData(frame, 0, 0);
+      sampleCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
     }
-    // Save current frame for next diff
+    // Always store the original frame for next diff
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
+    // If no prevFrame yet, skip drawing videograms this frame
+    if (!prevFrame || !prevFrame.data) {
+      rafId = requestAnimationFrame(drawVideogramFrame);
+      return;
+    }
+    // Use diffData for videograms if prevFrame exists
+    if (!prevFrame) return;
   } else {
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
+    diffData = data;
   }
 
 
@@ -121,9 +131,9 @@ function drawVideogramFrame() {
     let r = 0, g = 0, b = 0;
     for (let y = 0; y < videoHeight; y += 1) {
       const idx = (y * videoWidth + x) * 4;
-      r += data[idx];
-      g += data[idx + 1];
-      b += data[idx + 2];
+      r += diffData[idx];
+      g += diffData[idx + 1];
+      b += diffData[idx + 2];
     }
     const pixelIndex = x * 4;
     const scale = videoHeight;
@@ -154,9 +164,9 @@ function drawVideogramFrame() {
     let r = 0, g = 0, b = 0;
     for (let x = 0; x < videoWidth; x += 1) {
       const idx = (y * videoWidth + x) * 4;
-      r += data[idx];
-      g += data[idx + 1];
-      b += data[idx + 2];
+      r += diffData[idx];
+      g += diffData[idx + 1];
+      b += diffData[idx + 2];
     }
     const pixelIndex = y * 4;
     const scale = videoWidth;
