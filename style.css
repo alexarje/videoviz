@@ -66,6 +66,7 @@ body {
 
 
 
+
 .main-content {
   display: flex;
   flex-direction: column;
@@ -83,12 +84,28 @@ body {
   align-items: flex-start;
 }
 
+.video-and-horiz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.top-row {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
 
 .video-block, .videogram-vert-block {
   flex: 0 0 auto;
 }
 .videogram-horiz-block {
-  width: 100%;
+  width: 320px;
+  box-sizing: border-box;
 }
 
 .videogram-vert-block, .video-block, .videogram-horiz-block {
@@ -117,7 +134,11 @@ body {
     gap: 1rem;
     align-items: stretch;
   }
+  .video-and-horiz {
+    align-items: stretch;
+  }
   .videogram-horiz-block {
+    width: 100%;
     margin-top: 0;
   }
 }
