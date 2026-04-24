@@ -46,15 +46,17 @@ function applySampleSize() {
   vertBuffer = new Uint8ClampedArray(duration * videoHeight * 4);
   videogramCtxVert.clearRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
 
-  // Scale the canvases visually according to frame number (duration), proportional to video window
-  // Horizontal: height scales with duration
-  const scaleY = duration / videoHeight;
-  videogramCanvas.style.width = videoWidth + 'px';
-  videogramCanvas.style.height = (videoHeight * scaleY) + 'px';
+    // Scale the canvases visually according to frame number (duration), proportional to video window
+    // Horizontal: height scales with duration
+    const scaleY = duration / videoHeight;
+    videogramCanvas.style.width = videoWidth + 'px';
+    videogramCanvas.style.height = (videoHeight * scaleY) + 'px';
 
-  // Vertical: height always matches video, width scales with duration
-  videogramCanvasVert.style.height = videoHeight + 'px';
-  videogramCanvasVert.style.width = duration + 'px';
+    // Vertical: set both pixel buffer and DOM size to duration x videoHeight
+    videogramCanvasVert.width = duration;
+    videogramCanvasVert.height = videoHeight;
+    videogramCanvasVert.style.width = duration + 'px';
+    videogramCanvasVert.style.height = videoHeight + 'px';
 }
 function applyDuration(newDuration) {
   duration = Number(newDuration);

@@ -222,18 +222,17 @@ video {
   object-fit: contain;
 }
 
-#videogramCanvas {
+#videogramCanvasVert {
   display: block;
-  max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;
-  object-fit: contain;
 }
-
-.status {
-  margin-top: 1rem;
-  color: var(--text-muted);
+#videogramCanvas {
+  display: block;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(125, 249, 215, 0.28);
+  background: #000;
 }
 
 @media (max-width: 900px) {
