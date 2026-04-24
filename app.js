@@ -10,10 +10,15 @@ const diffVideoCanvas = document.getElementById("diffVideoCanvas");
 const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
 let frameDifferencing = false;
 let prevFrame = null;
+// --- Frame differencing buffer for temporal averaging ---
+const FRAME_DIFF_AVG_COUNT = 4; // Number of diffs to average
+let diffBuffer = [];
+
 if (diffCheckbox) {
   diffCheckbox.addEventListener("change", (e) => {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
+    resetDiffBuffer();
     // Show/hide video and diff canvas
     if (diffVideoCanvas && cameraVideo) {
       if (frameDifferencing) {
@@ -125,12 +130,12 @@ function drawVideogramFrame() {
   let data = frame.data;
 
 
-  // Frame differencing with threshold and normalization
+  // Frame differencing with threshold, normalization, and temporal averaging
   let diffData = data;
   if (frameDifferencing) {
     if (prevFrame) {
       let prevData = prevFrame.data;
-      diffData = new Uint8ClampedArray(data.length);
+      let rawDiff = new Uint8ClampedArray(data.length);
       let maxDiff = 0;
       for (let i = 0; i < data.length; i += 4) {
         // Compute per-pixel difference (grayscale)
@@ -139,15 +144,35 @@ function drawVideogramFrame() {
         const db = Math.abs(data[i + 2] - prevData[i + 2]);
         let diff = (dr + dg + db) / 3;
         if (diff > maxDiff) maxDiff = diff;
+        rawDiff[i] = rawDiff[i + 1] = rawDiff[i + 2] = diff;
+        rawDiff[i + 3] = 255;
+      }
+      // Add to buffer
+      diffBuffer.push(rawDiff);
+      if (diffBuffer.length > FRAME_DIFF_AVG_COUNT) diffBuffer.shift();
+      // Average buffer
+      diffData = new Uint8ClampedArray(data.length);
+      for (let i = 0; i < data.length; i += 4) {
+        let sum = 0;
+        for (let b = 0; b < diffBuffer.length; ++b) {
+          sum += diffBuffer[b][i];
+        }
+        let avg = sum / diffBuffer.length;
         // Threshold
-        diff = diff >= threshold ? diff : 0;
-        diffData[i] = diffData[i + 1] = diffData[i + 2] = diff;
+        avg = avg >= threshold ? avg : 0;
+        diffData[i] = diffData[i + 1] = diffData[i + 2] = avg;
         diffData[i + 3] = 255;
       }
       // Normalize if enabled
-      if (normalize && maxDiff > 0) {
+      if (normalize) {
+        let maxVal = 0;
         for (let i = 0; i < diffData.length; i += 4) {
-          diffData[i] = diffData[i + 1] = diffData[i + 2] = Math.round((diffData[i] / maxDiff) * 255);
+          if (diffData[i] > maxVal) maxVal = diffData[i];
+        }
+        if (maxVal > 0) {
+          for (let i = 0; i < diffData.length; i += 4) {
+            diffData[i] = diffData[i + 1] = diffData[i + 2] = Math.round((diffData[i] / maxVal) * 255);
+          }
         }
       }
       // Show difference in the visible diff video canvas
@@ -167,6 +192,7 @@ function drawVideogramFrame() {
   } else {
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
     diffData = data;
+    diffBuffer = [];
     // Show normal video frame in video element (handled by browser)
     if (diffVideoCanvas && diffVideoCtx) {
       diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
