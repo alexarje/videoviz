@@ -167,7 +167,8 @@ button:disabled {
 
 video {
   display: block;
-  width: 100%;
+  width: 320px;
+  max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;
@@ -177,7 +178,8 @@ video {
 
 #videogramCanvasVert {
   display: block;
-  /* width and height will be set by JS to match video */
+  width: 320px !important;
+  max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;
@@ -186,7 +188,8 @@ video {
 
 #videogramCanvas {
   display: block;
-  width: 100%;
+  width: 320px !important;
+  max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;
