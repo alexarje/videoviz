@@ -1,4 +1,5 @@
 
+
 const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
@@ -6,6 +7,15 @@ const videogramCanvasVert = document.getElementById("videogramCanvasVert");
 const durationRange = document.getElementById("durationRange");
 const durationValue = document.getElementById("durationValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
+const diffCheckbox = document.getElementById("diffCheckbox");
+let frameDifferencing = false;
+let prevFrame = null;
+if (diffCheckbox) {
+  diffCheckbox.addEventListener("change", (e) => {
+    frameDifferencing = e.target.checked;
+    prevFrame = null; // Reset on toggle
+  });
+}
 
 const videogramCtx = videogramCanvas.getContext("2d", { willReadFrequently: true });
 const videogramCtxVert = videogramCanvasVert.getContext("2d", { willReadFrequently: true });
@@ -65,6 +75,7 @@ function applyDuration(newDuration) {
 }
 
 
+
 function drawVideogramFrame() {
   if (!processing || cameraVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
     rafId = requestAnimationFrame(drawVideogramFrame);
@@ -80,8 +91,29 @@ function drawVideogramFrame() {
   sampleCtx.drawImage(cameraVideo, 0, 0, videoWidth, videoHeight);
   sampleCtx.restore();
 
-  const frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
-  const data = frame.data;
+  let frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
+  let data = frame.data;
+
+  // Frame differencing
+  if (frameDifferencing) {
+    if (prevFrame) {
+      let prevData = prevFrame.data;
+      for (let i = 0; i < data.length; i += 4) {
+        // Compute absolute difference for each channel
+        data[i] = Math.abs(data[i] - prevData[i]);
+        data[i + 1] = Math.abs(data[i + 1] - prevData[i + 1]);
+        data[i + 2] = Math.abs(data[i + 2] - prevData[i + 2]);
+        data[i + 3] = 255;
+      }
+      // Show difference in video preview
+      sampleCtx.putImageData(frame, 0, 0);
+    }
+    // Save current frame for next diff
+    prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
+  } else {
+    prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
+  }
+
 
   // Horizontal videogram (row-averaged)
   const averagedRow = new Uint8ClampedArray(videoWidth * 4);
@@ -114,6 +146,7 @@ function drawVideogramFrame() {
   } else {
     videogramCtx.putImageData(horizImage, 0, 0);
   }
+
 
   // Vertical videogram (column-averaged)
   const averagedCol = new Uint8ClampedArray(videoHeight * 4);

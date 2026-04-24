@@ -12,6 +12,7 @@
         <h1>VideoViz</h1>
       </header>
 
+
       <section class="controls" aria-label="Camera controls">
         <button id="toggleCameraBtn" type="button">Start Camera</button>
         <label class="mirror-toggle">
@@ -21,6 +22,9 @@
           Duration
           <input id="durationRange" type="range" min="16" max="512" step="1" value="80" />
           <span id="durationValue">80</span> frames
+        </label>
+        <label class="diff-toggle">
+          <input id="diffCheckbox" type="checkbox" /> Frame Differencing
         </label>
       </section>
 
