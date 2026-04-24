@@ -72,8 +72,16 @@ body {
   grid-row: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: flex-start;
-  align-items: stretch;
+  padding: 0.5rem 0;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+  width: fit-content;
+  margin: 0 auto;
 }
 .panel-video {
   grid-column: 2;
@@ -94,6 +102,18 @@ body {
 .panel-videogram-horiz {
   grid-column: 1 / span 2;
   grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem 0;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+  width: fit-content;
+  margin: 0 auto;
 }
 #stopBtn {
   background: rgba(255, 109, 109, 0.14);
