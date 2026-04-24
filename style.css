@@ -1,3 +1,6 @@
+.mirrored {
+  transform: scaleX(-1);
+}
 :root {
   --bg-top: #0f1723;
   --bg-bottom: #03060a;
