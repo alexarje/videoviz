@@ -1,5 +1,3 @@
-
-
 const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
@@ -14,6 +12,18 @@ if (diffCheckbox) {
   diffCheckbox.addEventListener("change", (e) => {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
+    // Show/hide video and diff canvas
+    const diffVideoCanvas = document.getElementById("diffVideoCanvas");
+    const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
+    if (diffVideoCanvas && cameraVideo) {
+      if (frameDifferencing) {
+        cameraVideo.style.display = "none";
+        diffVideoCanvas.style.display = "block";
+      } else {
+        cameraVideo.style.display = "block";
+        diffVideoCanvas.style.display = "none";
+      }
+    }
   });
 }
 
@@ -107,8 +117,10 @@ function drawVideogramFrame() {
         diffData[i + 2] = Math.abs(data[i + 2] - prevData[i + 2]);
         diffData[i + 3] = 255;
       }
-      // Show difference in video preview
-      sampleCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
+      // Show difference in the visible diff video canvas
+      if (diffVideoCtx && diffVideoCanvas && diffVideoCanvas.style.display !== "none") {
+        diffVideoCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
+      }
     }
     // Always store the original frame for next diff
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
@@ -122,6 +134,10 @@ function drawVideogramFrame() {
   } else {
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
     diffData = data;
+    // Show normal video frame in video element (handled by browser)
+    if (diffVideoCanvas && diffVideoCtx) {
+      diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
+    }
   }
 
 
