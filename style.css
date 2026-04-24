@@ -46,10 +46,22 @@ body {
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(2, max-content) 1fr;
+  grid-template-columns: repeat(3, max-content) 1fr;
   gap: 0.7rem;
   align-items: center;
   margin-bottom: 1.2rem;
+}
+.mirror-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  user-select: none;
+}
+
+.mirrored {
+  transform: scaleX(-1);
 }
 
 button {
@@ -147,7 +159,12 @@ canvas {
 
 @media (max-width: 900px) {
   .controls {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .mirror-toggle {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 
   .density-control {

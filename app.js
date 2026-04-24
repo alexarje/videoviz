@@ -1,3 +1,4 @@
+
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const cameraVideo = document.getElementById("cameraVideo");
@@ -5,14 +6,17 @@ const videogramCanvas = document.getElementById("videogramCanvas");
 const statusText = document.getElementById("statusText");
 const sampleWidthRange = document.getElementById("sampleWidthRange");
 const sampleWidthValue = document.getElementById("sampleWidthValue");
+const mirrorCheckbox = document.getElementById("mirrorCheckbox");
 
 const videogramCtx = videogramCanvas.getContext("2d", { willReadFrequently: true });
 const sampleCanvas = document.createElement("canvas");
 const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
 
+
 let stream = null;
 let rafId = null;
 let processing = false;
+let mirrored = false;
 
 function updateStatus(message) {
   statusText.textContent = message;
@@ -38,13 +42,22 @@ function applySampleSize(width) {
   sampleWidthValue.textContent = `${sampleWidth} px`;
 }
 
+
 function drawVideogramFrame() {
   if (!processing || cameraVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
     rafId = requestAnimationFrame(drawVideogramFrame);
     return;
   }
 
+  // Mirror the sample if needed
+  sampleCtx.save();
+  if (mirrored) {
+    sampleCtx.translate(sampleCanvas.width, 0);
+    sampleCtx.scale(-1, 1);
+  }
   sampleCtx.drawImage(cameraVideo, 0, 0, sampleCanvas.width, sampleCanvas.height);
+  sampleCtx.restore();
+
   const frame = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
   const data = frame.data;
 
@@ -71,6 +84,11 @@ function drawVideogramFrame() {
     averagedRow[pixelIndex + 3] = 255;
   }
 
+  videogramCtx.save();
+  if (mirrored) {
+    videogramCtx.translate(videogramCanvas.width, 0);
+    videogramCtx.scale(-1, 1);
+  }
   videogramCtx.drawImage(
     videogramCanvas,
     0,
@@ -85,6 +103,7 @@ function drawVideogramFrame() {
 
   const strip = new ImageData(averagedRow, sampleCanvas.width, 1);
   videogramCtx.putImageData(strip, 0, videogramCanvas.height - 1);
+  videogramCtx.restore();
 
   rafId = requestAnimationFrame(drawVideogramFrame);
 }
@@ -134,6 +153,13 @@ function stopCamera() {
   setButtons(false);
   updateStatus("Camera stopped.");
 }
+
+
+mirrorCheckbox.addEventListener("change", () => {
+  mirrored = mirrorCheckbox.checked;
+  cameraVideo.classList.toggle("mirrored", mirrored);
+  videogramCanvas.classList.toggle("mirrored", mirrored);
+});
 
 startBtn.addEventListener("click", startCamera);
 stopBtn.addEventListener("click", stopCamera);
