@@ -53,7 +53,7 @@ if (diffCheckbox) {
 const diffThreshold = document.getElementById("diffThreshold");
 const diffThresholdValue = document.getElementById("diffThresholdValue");
 const normalizeCheckbox = document.getElementById("normalizeCheckbox");
-let threshold = 24;
+let threshold = 0;
 let normalize = true;
 if (diffThreshold) {
   diffThreshold.addEventListener("input", (e) => {
@@ -83,7 +83,7 @@ let processing = false;
 let mirrored = false;
 const videoWidth = 320;
 const videoHeight = 240;
-let duration = 80;
+let duration = 320;
 let horizBuffer = null;
 let vertBuffer = null;
 

@@ -229,15 +229,22 @@ button:disabled {
   color: var(--text-muted);
 }
 
-video {
+/* Camera feed + motion feed should match sizing (avoid "cropped" mismatch). */
+#cameraVideo,
+#diffVideoCanvas {
   display: block;
   width: 320px;
+  height: 240px;
   max-width: 100%;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+}
+
+/* If the camera stream is 16:9, "cover" crops inside the 4:3 box.
+   Using "contain" keeps framing consistent with the diff canvas. */
+#cameraVideo {
+  object-fit: contain;
 }
 
 #videogramCanvasVert {
