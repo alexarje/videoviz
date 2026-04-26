@@ -10,13 +10,24 @@ const diffVideoCanvas = document.getElementById("diffVideoCanvas");
 const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
 let frameDifferencing = false;
 let prevFrame = null;
+let hasDiffFrameToShow = false;
 // --- Frame differencing buffer for temporal averaging ---
 const FRAME_DIFF_AVG_COUNT = 4; // Number of diffs to average
 let diffBuffer = [];
 
+function resetDiffBuffer() {
+  diffBuffer = [];
+  hasDiffFrameToShow = false;
+  if (diffVideoCtx) {
+    diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
+  }
+}
+
 function syncVideoDiffVisibility() {
   if (diffVideoCanvas && cameraVideo) {
-    if (frameDifferencing) {
+    // Only switch to the motion/diff view once we actually have a computed diff frame.
+    // This avoids showing a blank canvas immediately after enabling differencing.
+    if (frameDifferencing && hasDiffFrameToShow) {
       cameraVideo.style.display = "none";
       diffVideoCanvas.style.display = "block";
     } else {
@@ -33,6 +44,7 @@ if (diffCheckbox) {
   diffCheckbox.addEventListener("change", (e) => {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
+    hasDiffFrameToShow = false;
     resetDiffBuffer();
     syncVideoDiffVisibility();
   });
@@ -182,8 +194,10 @@ function drawVideogramFrame() {
         }
       }
       // Show difference in the visible diff video canvas
-      if (diffVideoCtx && diffVideoCanvas && diffVideoCanvas.style.display !== "none") {
+      if (diffVideoCtx && diffVideoCanvas) {
         diffVideoCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
+        hasDiffFrameToShow = true;
+        syncVideoDiffVisibility();
       }
     }
     // Always store the original frame for next diff
@@ -199,10 +213,12 @@ function drawVideogramFrame() {
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
     diffData = data;
     diffBuffer = [];
+    hasDiffFrameToShow = false;
     // Show normal video frame in video element (handled by browser)
     if (diffVideoCanvas && diffVideoCtx) {
       diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
     }
+    syncVideoDiffVisibility();
   }
 
 
