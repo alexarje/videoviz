@@ -5,11 +5,12 @@ VideoViz is a lightweight browser app that turns live camera video into two roll
 It runs entirely in the browser (no build step), uses standard Web APIs, and can optionally switch into a motion-focused mode using frame differencing.
 
 ## What you see
-VideoViz shows three synchronized views:
+VideoViz shows a 2×2 grid of synchronized views:
 
-- **Camera / Motion view**: your live webcam feed (or a motion/difference view when enabled)
-- **Videogram (Horizontal Avg)**: a scrolling history built from row-averaged pixels
-- **Videogram (Vertical Avg)**: a scrolling history built from column-averaged pixels
+- **Camera / Motion**: a center-cropped square view of your webcam (or a motion/difference view when enabled)
+- **Videogram (Horizontal Avg)**: a square scrolling history built from row-averaged pixels
+- **Videogram (Vertical Avg)**: a square scrolling history built from column-averaged pixels
+- **Self-similarity**: a similarity matrix over recent frames (raw video when differencing is off; diff video when on)
 
 Together, these give you a “summary over time” that’s great for:
 
@@ -40,9 +41,9 @@ Turn on **Frame Differencing** to visualize motion directly.
 Instead of using raw camera pixels, the app computes a per-pixel grayscale difference between consecutive frames (with optional thresholding and normalization). This motion image is displayed, and the videograms are driven from the motion data — so moving parts pop out while static backgrounds fade away.
 
 ## Key controls
-- **Duration (default: 320)**: how many frames are kept in the rolling buffers. Higher values show more history but cost more CPU/memory.
-- **Mirror**: mirrors the camera/motion view (useful for selfie-style interaction).
-- **Frame Differencing (default: off)**: toggles motion processing and switches the view to the motion canvas once the first diff frame is available.
+- **Duration (fixed: 400)**: how many frames are kept in the rolling buffers. Higher values show more history but cost more CPU/memory.
+- **Mirror**: mirrors the square camera/motion view.
+- **Frame Differencing (default: off)**: toggles motion processing.
 - **Threshold (default: 0)**: suppresses small pixel changes (noise).
 - **Normalize (default: on)**: stretches motion intensity to the full 0–255 range so subtle movement is easier to see.
 

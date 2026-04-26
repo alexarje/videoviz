@@ -121,7 +121,7 @@ body {
 }
 
 .controls-row-slider input[type="range"] {
-  width: min(420px, 70vw);
+  width: min(210px, 35vw);
 }
 /* Old checkbox toggles removed in favor of buttons. */
 
@@ -245,15 +245,17 @@ button:disabled {
 
 
 .main-content h2 {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.2rem;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
   text-align: center;
   line-height: 1.2;
-  /* Keep canvas tops aligned even if a title wraps */
-  min-height: 2.4em;
+  /* Keep layout tight and avoid wrapping-induced misalignment */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Individual videogram canvas rules are handled by `.viz-block canvas`. */

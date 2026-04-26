@@ -29,11 +29,12 @@ Motion view (Frame Differencing):
 - Optional **Frame Differencing** mode that shows a motion/difference view and uses that data for the videograms
 
 ## Controls (current defaults)
-- **Duration**: number of frames kept in the rolling buffers (**default: 320**)
-- **Mirror**: mirrors only the camera/motion view (videograms keep a fixed orientation)
-- **Frame Differencing**: toggles motion/difference processing (**default: off**)
-- **Threshold**: suppress small differences (**default: 0**)
-- **Normalize**: stretches motion intensity to full 0–255 (enabled by default)
+- **Layout**: 2×2 grid of square 400×400 canvases (camera/motion, two videograms, self-similarity)
+- **Duration**: fixed rolling buffer length (**400** frames)
+- **Mirror**: toggle
+- **Frame Differencing**: toggle (**default: off**)
+- **Threshold**: slider (**default: 0**)
+- **Normalize**: toggle (enabled by default)
 
 ## Run locally
 Camera access is most reliable from `http://` (not `file://`), so serve the folder with a tiny local server:
