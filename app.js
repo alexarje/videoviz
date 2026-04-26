@@ -1,54 +1,28 @@
 const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
+const viewCanvas = document.getElementById("viewCanvas");
+const viewCtx = viewCanvas ? viewCanvas.getContext("2d", { willReadFrequently: true }) : null;
 const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
 const selfSimCanvas = document.getElementById("selfSimCanvas");
 const selfSimCtx = selfSimCanvas ? selfSimCanvas.getContext("2d", { willReadFrequently: true }) : null;
-const durationRange = document.getElementById("durationRange");
-const durationValue = document.getElementById("durationValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
 const diffCheckbox = document.getElementById("diffCheckbox");
-const diffVideoCanvas = document.getElementById("diffVideoCanvas");
-const diffVideoCtx = diffVideoCanvas ? diffVideoCanvas.getContext("2d") : null;
 let frameDifferencing = false;
 let prevFrame = null;
-let hasDiffFrameToShow = false;
 // --- Frame differencing buffer for temporal averaging ---
 const FRAME_DIFF_AVG_COUNT = 4; // Number of diffs to average
 let diffBuffer = [];
 
 function resetDiffBuffer() {
   diffBuffer = [];
-  hasDiffFrameToShow = false;
-  if (diffVideoCtx) {
-    diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
-  }
 }
-
-function syncVideoDiffVisibility() {
-  if (diffVideoCanvas && cameraVideo) {
-    // Only switch to the motion/diff view once we actually have a computed diff frame.
-    // This avoids showing a blank canvas immediately after enabling differencing.
-    if (frameDifferencing && hasDiffFrameToShow) {
-      cameraVideo.style.display = "none";
-      diffVideoCanvas.style.display = "block";
-    } else {
-      cameraVideo.style.display = "block";
-      diffVideoCanvas.style.display = "none";
-    }
-  }
-}
-
-// Initial state on load
-syncVideoDiffVisibility();
 
 if (diffCheckbox) {
   diffCheckbox.addEventListener("change", (e) => {
     frameDifferencing = e.target.checked;
     prevFrame = null; // Reset on toggle
-    hasDiffFrameToShow = false;
     resetDiffBuffer();
-    syncVideoDiffVisibility();
     resetSSM();
   });
 }
@@ -84,9 +58,9 @@ let stream = null;
 let rafId = null;
 let processing = false;
 let mirrored = false;
-const videoWidth = 320;
-const videoHeight = 240;
-let duration = 320;
+const videoWidth = 480;
+const videoHeight = 480;
+const duration = 480;
 let horizBuffer = null;
 let vertBuffer = null;
 
@@ -99,15 +73,18 @@ const SSM_FEATURE_DIM = SSM_FEATURE_W * SSM_FEATURE_H;
 const SSM_UPDATE_EVERY_N_FRAMES = 3;
 let ssmFeatures = [];
 let ssmFrameCounter = 0;
+const ssmSmallCanvas = document.createElement("canvas");
+ssmSmallCanvas.width = SSM_SIZE;
+ssmSmallCanvas.height = SSM_SIZE;
+const ssmSmallCtx = ssmSmallCanvas.getContext("2d", { willReadFrequently: true });
 
 function updateStatus(message) {}
 
 function resetSSM() {
   ssmFeatures = [];
   ssmFrameCounter = 0;
-  if (selfSimCtx && selfSimCanvas) {
-    selfSimCtx.clearRect(0, 0, selfSimCanvas.width, selfSimCanvas.height);
-  }
+  if (ssmSmallCtx) ssmSmallCtx.clearRect(0, 0, SSM_SIZE, SSM_SIZE);
+  if (selfSimCtx && selfSimCanvas) selfSimCtx.clearRect(0, 0, selfSimCanvas.width, selfSimCanvas.height);
 }
 
 function extractSSMFeature(rgbOrGrayData, w, h) {
@@ -143,13 +120,13 @@ function extractSSMFeature(rgbOrGrayData, w, h) {
 }
 
 function renderSSM() {
-  if (!selfSimCtx || !selfSimCanvas) return;
+  if (!selfSimCtx || !selfSimCanvas || !ssmSmallCtx) return;
 
   const n = ssmFeatures.length;
   if (n === 0) return;
 
-  const out = new Uint8ClampedArray(selfSimCanvas.width * selfSimCanvas.height * 4);
-  const size = selfSimCanvas.width; // expected square
+  const out = new Uint8ClampedArray(SSM_SIZE * SSM_SIZE * 4);
+  const size = SSM_SIZE;
 
   // Map features (most recent first) into an NxN similarity image.
   for (let y = 0; y < size; y++) {
@@ -162,7 +139,7 @@ function renderSSM() {
       let dot = 0;
       for (let i = 0; i < SSM_FEATURE_DIM; i++) dot += fx[i] * fy[i];
       // dot is in [-1, 1]; map to [0, 255]
-      const v = Math.max(0, Math.min(255, Math.round(((dot + 1) / 2) * 255)));
+      const v = 255 - Math.max(0, Math.min(255, Math.round(((dot + 1) / 2) * 255)));
 
       const o = (y * size + x) * 4;
       out[o] = v;
@@ -172,15 +149,18 @@ function renderSSM() {
     }
   }
 
-  selfSimCtx.putImageData(new ImageData(out, selfSimCanvas.width, selfSimCanvas.height), 0, 0);
+  ssmSmallCtx.putImageData(new ImageData(out, SSM_SIZE, SSM_SIZE), 0, 0);
+  selfSimCtx.imageSmoothingEnabled = false;
+  selfSimCtx.clearRect(0, 0, selfSimCanvas.width, selfSimCanvas.height);
+  selfSimCtx.drawImage(ssmSmallCanvas, 0, 0, selfSimCanvas.width, selfSimCanvas.height);
 }
 
-function drawVideoContain(ctx, videoEl, w, h, mirror) {
-  // Draw the current video frame into a fixed WxH box using "contain"
-  // so the framing matches CSS `object-fit: contain` (letterbox/pillarbox).
+function drawVideoCover(ctx, videoEl, w, h, mirror) {
+  // Draw the current video frame into a fixed WxH box using "cover"
+  // (center-crop) so the live view is a square crop.
   const vw = videoEl.videoWidth || w;
   const vh = videoEl.videoHeight || h;
-  const scale = Math.min(w / vw, h / vh);
+  const scale = Math.max(w / vw, h / vh);
   const dw = Math.round(vw * scale);
   const dh = Math.round(vh * scale);
   const dx = Math.floor((w - dw) / 2);
@@ -189,8 +169,6 @@ function drawVideoContain(ctx, videoEl, w, h, mirror) {
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, w, h);
 
   if (mirror) {
     ctx.translate(w, 0);
@@ -210,34 +188,17 @@ function applySampleSize() {
   sampleCanvas.width = videoWidth;
   sampleCanvas.height = videoHeight;
 
-  // Horizontal videogram (row-averaged): width = videoWidth, height = duration
+  // Horizontal videogram (row-averaged): width = videoWidth, height = duration (square)
   videogramCanvas.width = videoWidth;
   videogramCanvas.height = duration;
   horizBuffer = new Uint8ClampedArray(videoWidth * duration * 4);
   videogramCtx.clearRect(0, 0, videogramCanvas.width, videogramCanvas.height);
 
-  // Vertical videogram (column-averaged): width = duration, height = videoHeight
+  // Vertical videogram (column-averaged): width = duration, height = videoHeight (square)
   videogramCanvasVert.width = duration;
   videogramCanvasVert.height = videoHeight;
   vertBuffer = new Uint8ClampedArray(duration * videoHeight * 4);
   videogramCtxVert.clearRect(0, 0, videogramCanvasVert.width, videogramCanvasVert.height);
-
-    // Scale the canvases visually according to frame number (duration), proportional to video window
-    // Horizontal: height scales with duration
-    const scaleY = duration / videoHeight;
-    videogramCanvas.style.width = videoWidth + 'px';
-    videogramCanvas.style.height = (videoHeight * scaleY) + 'px';
-
-    // Vertical: set both pixel buffer and DOM size to duration x videoHeight
-    videogramCanvasVert.width = duration;
-    videogramCanvasVert.height = videoHeight;
-    videogramCanvasVert.style.width = duration + 'px';
-    videogramCanvasVert.style.height = videoHeight + 'px';
-}
-function applyDuration(newDuration) {
-  duration = Number(newDuration);
-  applySampleSize();
-  durationValue.textContent = duration;
 }
 
 
@@ -249,11 +210,12 @@ function drawVideogramFrame() {
   }
 
   // Draw the frame into our fixed processing resolution using "contain",
-  // so the motion canvas matches the regular video framing.
-  drawVideoContain(sampleCtx, cameraVideo, videoWidth, videoHeight, mirrored);
+  // so we can display a consistent 480x480 crop in all views.
+  drawVideoCover(sampleCtx, cameraVideo, videoWidth, videoHeight, mirrored);
 
   let frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
   let data = frame.data;
+  const rawData = data;
 
   // Frame differencing with threshold, normalization, and temporal averaging
   let diffData = data;
@@ -300,37 +262,30 @@ function drawVideogramFrame() {
           }
         }
       }
-      // Show difference in the visible diff video canvas
-      if (diffVideoCtx && diffVideoCanvas) {
-        diffVideoCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
-        hasDiffFrameToShow = true;
-        syncVideoDiffVisibility();
-      }
     }
     // Always store the original frame for next diff
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
-    // If no prevFrame yet, skip drawing videograms this frame
-    if (!prevFrame || !prevFrame.data) {
-      rafId = requestAnimationFrame(drawVideogramFrame);
-      return;
-    }
-    // Use diffData for videograms if prevFrame exists
-    if (!prevFrame) return;
   } else {
     prevFrame = new ImageData(new Uint8ClampedArray(data), videoWidth, videoHeight);
     diffData = data;
     diffBuffer = [];
-    hasDiffFrameToShow = false;
-    // Show normal video frame in video element (handled by browser)
-    if (diffVideoCanvas && diffVideoCtx) {
-      diffVideoCtx.clearRect(0, 0, videoWidth, videoHeight);
+  }
+
+  // Draw the square live view (camera or motion) into the visible canvas.
+  if (viewCtx && viewCanvas) {
+    if (frameDifferencing && prevFrame) {
+      viewCtx.putImageData(new ImageData(diffData, videoWidth, videoHeight), 0, 0);
+    } else {
+      viewCtx.putImageData(frame, 0, 0);
     }
-    syncVideoDiffVisibility();
   }
 
   // --- Self-similarity update (use same data source as videograms) ---
   if (selfSimCtx && selfSimCanvas) {
-    const feat = extractSSMFeature(diffData, videoWidth, videoHeight);
+    // When frame differencing is off, build the SSM from the original video.
+    // When on, build it from the motion/difference image.
+    const ssmSource = frameDifferencing ? diffData : rawData;
+    const feat = extractSSMFeature(ssmSource, videoWidth, videoHeight);
     ssmFeatures.unshift(feat);
     if (ssmFeatures.length > SSM_SIZE) ssmFeatures.pop();
 
@@ -425,7 +380,6 @@ async function startCamera() {
     // After video is playing, update the vertical videogram canvas width and height to fixed 320px width
     setTimeout(() => {
       applySampleSize();
-      syncVideoDiffVisibility(); // Ensure correct video/canvas is visible after camera starts
     }, 100);
 
     processing = true;
@@ -469,9 +423,5 @@ toggleCameraBtn.addEventListener("click", () => {
     startCamera();
   }
 });
-durationRange.addEventListener("input", (event) => {
-  applyDuration(event.target.value);
-});
 
 applySampleSize();
-applyDuration(durationRange.value);
