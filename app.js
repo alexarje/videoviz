@@ -6,8 +6,8 @@ const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
 const selfSimCanvas = document.getElementById("selfSimCanvas");
 const selfSimCtx = selfSimCanvas ? selfSimCanvas.getContext("2d", { willReadFrequently: true }) : null;
-const mirrorCheckbox = document.getElementById("mirrorCheckbox");
-const diffCheckbox = document.getElementById("diffCheckbox");
+const mirrorBtn = document.getElementById("mirrorBtn");
+const diffBtn = document.getElementById("diffBtn");
 let frameDifferencing = false;
 let prevFrame = null;
 // --- Frame differencing buffer for temporal averaging ---
@@ -18,18 +18,9 @@ function resetDiffBuffer() {
   diffBuffer = [];
 }
 
-if (diffCheckbox) {
-  diffCheckbox.addEventListener("change", (e) => {
-    frameDifferencing = e.target.checked;
-    prevFrame = null; // Reset on toggle
-    resetDiffBuffer();
-    resetSSM();
-  });
-}
-
 const diffThreshold = document.getElementById("diffThreshold");
 const diffThresholdValue = document.getElementById("diffThresholdValue");
-const normalizeCheckbox = document.getElementById("normalizeCheckbox");
+const normalizeBtn = document.getElementById("normalizeBtn");
 let threshold = 0;
 let normalize = true;
 if (diffThreshold) {
@@ -40,11 +31,27 @@ if (diffThreshold) {
   threshold = Number(diffThreshold.value);
   if (diffThresholdValue) diffThresholdValue.textContent = threshold;
 }
-if (normalizeCheckbox) {
-  normalizeCheckbox.addEventListener("change", (e) => {
-    normalize = e.target.checked;
+if (normalizeBtn) {
+  normalize = normalizeBtn.getAttribute("aria-pressed") === "true";
+  normalizeBtn.classList.toggle("is-active", normalize);
+  normalizeBtn.addEventListener("click", () => {
+    normalize = !normalize;
+    normalizeBtn.setAttribute("aria-pressed", String(normalize));
+    normalizeBtn.classList.toggle("is-active", normalize);
   });
-  normalize = normalizeCheckbox.checked;
+}
+
+if (diffBtn) {
+  frameDifferencing = diffBtn.getAttribute("aria-pressed") === "true";
+  diffBtn.classList.toggle("is-active", frameDifferencing);
+  diffBtn.addEventListener("click", () => {
+    frameDifferencing = !frameDifferencing;
+    diffBtn.setAttribute("aria-pressed", String(frameDifferencing));
+    diffBtn.classList.toggle("is-active", frameDifferencing);
+    prevFrame = null; // Reset on toggle
+    resetDiffBuffer();
+    resetSSM();
+  });
 }
 
 const videogramCtx = videogramCanvas.getContext("2d", { willReadFrequently: true });
@@ -410,11 +417,15 @@ function stopCamera() {
 
 
 
-mirrorCheckbox.addEventListener("change", () => {
-  mirrored = mirrorCheckbox.checked;
-  cameraVideo.classList.toggle("mirrored", mirrored);
-  // No CSS mirroring for horizontal videogram; handled in drawVideogramFrame
-});
+if (mirrorBtn) {
+  mirrored = mirrorBtn.getAttribute("aria-pressed") === "true";
+  mirrorBtn.classList.toggle("is-active", mirrored);
+  mirrorBtn.addEventListener("click", () => {
+    mirrored = !mirrored;
+    mirrorBtn.setAttribute("aria-pressed", String(mirrored));
+    mirrorBtn.classList.toggle("is-active", mirrored);
+  });
+}
 
 toggleCameraBtn.addEventListener("click", () => {
   if (processing) {
