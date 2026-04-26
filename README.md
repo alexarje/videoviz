@@ -1,16 +1,8 @@
 # VideoViz
 
-Live camera visualization with dual videograms, self-similarity matrix and optional motion (frame differencing) view.
+Live camera visualization with dual videograms, self-similarity matrix and optional motion (frame differencing) view. Try the [Live demo](https://alexarje.github.io/videoviz/) and check the [Wiki](https://github.com/alexarje/videoviz/wiki) for details. 
 
-<p align="center">
-	<img src="documentation/videoviz.webp" alt="VideoViz UI illustration" width="500" />
-</p>
-
-Try it:
-- **Live demo**: https://alexarje.github.io/videoviz/
-
-Docs:
-- **Wiki**: https://github.com/alexarje/videoviz/wiki
+|[VideoViz UI illustration](documentation/videoviz.webp)
 
 ## Demo
 Regular view:

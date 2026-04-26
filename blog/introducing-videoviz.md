@@ -40,6 +40,18 @@ Turn on **Frame Differencing** to visualize motion directly.
 
 Instead of using raw camera pixels, the app computes a per-pixel grayscale difference between consecutive frames (with optional thresholding and normalization). This motion image is displayed, and the videograms are driven from the motion data — so moving parts pop out while static backgrounds fade away.
 
+## Self-similarity matrix (SSM)
+The **Self-similarity** panel shows how similar recent frames are to each other. Each axis is time, and each pixel encodes the similarity between two frames.
+
+- The diagonal is “now vs now”.
+- Repeating motion shows up as parallel diagonal bands.
+- Sudden changes show up as block boundaries.
+
+VideoViz builds the SSM from:
+
+- **Raw video** when Frame Differencing is **off**
+- **Motion/diff image** when Frame Differencing is **on**
+
 ## Key controls
 - **Duration (fixed: 400)**: how many frames are kept in the rolling buffers. Higher values show more history but cost more CPU/memory.
 - **Mirror**: mirrors the square camera/motion view.
