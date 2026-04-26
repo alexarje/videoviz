@@ -84,9 +84,10 @@ body {
 
 .viz-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 400px));
   gap: 2rem;
   align-items: start;
+  justify-content: center;
 }
 
 .viz-block {
@@ -106,6 +107,7 @@ body {
   width: 100%;
   height: auto;
   aspect-ratio: 1 / 1;
+  max-width: 400px;
   border-radius: 0.7rem;
   border: 1px solid rgba(125, 249, 215, 0.28);
   background: #000;

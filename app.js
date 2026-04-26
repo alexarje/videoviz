@@ -58,9 +58,9 @@ let stream = null;
 let rafId = null;
 let processing = false;
 let mirrored = false;
-const videoWidth = 480;
-const videoHeight = 480;
-const duration = 480;
+const videoWidth = 400;
+const videoHeight = 400;
+const duration = 400;
 let horizBuffer = null;
 let vertBuffer = null;
 
