@@ -6,6 +6,9 @@ const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
 const selfSimCanvas = document.getElementById("selfSimCanvas");
 const selfSimCtx = selfSimCanvas ? selfSimCanvas.getContext("2d", { willReadFrequently: true }) : null;
+const videoModeTitle = document.getElementById("videoModeTitle");
+const vertGramTitle = document.getElementById("vertGramTitle");
+const horizGramTitle = document.getElementById("horizGramTitle");
 const mirrorBtn = document.getElementById("mirrorBtn");
 const diffBtn = document.getElementById("diffBtn");
 let frameDifferencing = false;
@@ -16,6 +19,18 @@ let diffBuffer = [];
 
 function resetDiffBuffer() {
   diffBuffer = [];
+}
+
+function syncModeLabels() {
+  if (videoModeTitle) {
+    videoModeTitle.textContent = frameDifferencing ? "Motion video" : "Regular video";
+  }
+  if (vertGramTitle) {
+    vertGramTitle.textContent = frameDifferencing ? "Motiongram (Vertical Avg)" : "Videogram (Vertical Avg)";
+  }
+  if (horizGramTitle) {
+    horizGramTitle.textContent = frameDifferencing ? "Motiongram (Horizontal Avg)" : "Videogram (Horizontal Avg)";
+  }
 }
 
 const diffThreshold = document.getElementById("diffThreshold");
@@ -44,6 +59,7 @@ if (normalizeBtn) {
 if (diffBtn) {
   frameDifferencing = diffBtn.getAttribute("aria-pressed") === "true";
   diffBtn.classList.toggle("is-active", frameDifferencing);
+  syncModeLabels();
   diffBtn.addEventListener("click", () => {
     frameDifferencing = !frameDifferencing;
     diffBtn.setAttribute("aria-pressed", String(frameDifferencing));
@@ -51,6 +67,7 @@ if (diffBtn) {
     prevFrame = null; // Reset on toggle
     resetDiffBuffer();
     resetSSM();
+    syncModeLabels();
   });
 }
 
