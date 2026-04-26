@@ -2,6 +2,8 @@ const toggleCameraBtn = document.getElementById("toggleCameraBtn");
 const cameraVideo = document.getElementById("cameraVideo");
 const videogramCanvas = document.getElementById("videogramCanvas");
 const videogramCanvasVert = document.getElementById("videogramCanvasVert");
+const selfSimCanvas = document.getElementById("selfSimCanvas");
+const selfSimCtx = selfSimCanvas ? selfSimCanvas.getContext("2d", { willReadFrequently: true }) : null;
 const durationRange = document.getElementById("durationRange");
 const durationValue = document.getElementById("durationValue");
 const mirrorCheckbox = document.getElementById("mirrorCheckbox");
@@ -47,6 +49,7 @@ if (diffCheckbox) {
     hasDiffFrameToShow = false;
     resetDiffBuffer();
     syncVideoDiffVisibility();
+    resetSSM();
   });
 }
 
@@ -87,7 +90,90 @@ let duration = 320;
 let horizBuffer = null;
 let vertBuffer = null;
 
+// --- Self-similarity matrix (SSM) ---
+// Keep this independent of `duration` for performance (N^2 cost).
+const SSM_SIZE = 128;
+const SSM_FEATURE_W = 16;
+const SSM_FEATURE_H = 12;
+const SSM_FEATURE_DIM = SSM_FEATURE_W * SSM_FEATURE_H;
+const SSM_UPDATE_EVERY_N_FRAMES = 3;
+let ssmFeatures = [];
+let ssmFrameCounter = 0;
+
 function updateStatus(message) {}
+
+function resetSSM() {
+  ssmFeatures = [];
+  ssmFrameCounter = 0;
+  if (selfSimCtx && selfSimCanvas) {
+    selfSimCtx.clearRect(0, 0, selfSimCanvas.width, selfSimCanvas.height);
+  }
+}
+
+function extractSSMFeature(rgbOrGrayData, w, h) {
+  // Downsample to a small grid and normalize for cosine similarity.
+  const feat = new Float32Array(SSM_FEATURE_DIM);
+  let k = 0;
+
+  for (let gy = 0; gy < SSM_FEATURE_H; gy++) {
+    const y = Math.min(h - 1, Math.floor((gy + 0.5) * (h / SSM_FEATURE_H)));
+    for (let gx = 0; gx < SSM_FEATURE_W; gx++) {
+      const x = Math.min(w - 1, Math.floor((gx + 0.5) * (w / SSM_FEATURE_W)));
+      const idx = (y * w + x) * 4;
+      // Use grayscale intensity.
+      feat[k++] = (rgbOrGrayData[idx] + rgbOrGrayData[idx + 1] + rgbOrGrayData[idx + 2]) / (3 * 255);
+    }
+  }
+
+  // Zero-mean + unit-norm for more informative cosine similarity.
+  let mean = 0;
+  for (let i = 0; i < feat.length; i++) mean += feat[i];
+  mean /= feat.length;
+
+  let norm = 0;
+  for (let i = 0; i < feat.length; i++) {
+    const v = feat[i] - mean;
+    feat[i] = v;
+    norm += v * v;
+  }
+  norm = Math.sqrt(norm) || 1;
+  for (let i = 0; i < feat.length; i++) feat[i] /= norm;
+
+  return feat;
+}
+
+function renderSSM() {
+  if (!selfSimCtx || !selfSimCanvas) return;
+
+  const n = ssmFeatures.length;
+  if (n === 0) return;
+
+  const out = new Uint8ClampedArray(selfSimCanvas.width * selfSimCanvas.height * 4);
+  const size = selfSimCanvas.width; // expected square
+
+  // Map features (most recent first) into an NxN similarity image.
+  for (let y = 0; y < size; y++) {
+    const iy = Math.floor((y / size) * n);
+    const fy = ssmFeatures[iy];
+    for (let x = 0; x < size; x++) {
+      const ix = Math.floor((x / size) * n);
+      const fx = ssmFeatures[ix];
+
+      let dot = 0;
+      for (let i = 0; i < SSM_FEATURE_DIM; i++) dot += fx[i] * fy[i];
+      // dot is in [-1, 1]; map to [0, 255]
+      const v = Math.max(0, Math.min(255, Math.round(((dot + 1) / 2) * 255)));
+
+      const o = (y * size + x) * 4;
+      out[o] = v;
+      out[o + 1] = v;
+      out[o + 2] = v;
+      out[o + 3] = 255;
+    }
+  }
+
+  selfSimCtx.putImageData(new ImageData(out, selfSimCanvas.width, selfSimCanvas.height), 0, 0);
+}
 
 function drawVideoContain(ctx, videoEl, w, h, mirror) {
   // Draw the current video frame into a fixed WxH box using "contain"
@@ -169,7 +255,6 @@ function drawVideogramFrame() {
   let frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
   let data = frame.data;
 
-
   // Frame differencing with threshold, normalization, and temporal averaging
   let diffData = data;
   if (frameDifferencing) {
@@ -243,6 +328,18 @@ function drawVideogramFrame() {
     syncVideoDiffVisibility();
   }
 
+  // --- Self-similarity update (use same data source as videograms) ---
+  if (selfSimCtx && selfSimCanvas) {
+    const feat = extractSSMFeature(diffData, videoWidth, videoHeight);
+    ssmFeatures.unshift(feat);
+    if (ssmFeatures.length > SSM_SIZE) ssmFeatures.pop();
+
+    ssmFrameCounter++;
+    if (ssmFrameCounter % SSM_UPDATE_EVERY_N_FRAMES === 0) {
+      renderSSM();
+    }
+  }
+
 
   // Horizontal videogram (row-averaged)
   const averagedRow = new Uint8ClampedArray(videoWidth * 4);
@@ -312,6 +409,7 @@ async function startCamera() {
   }
 
   try {
+    resetSSM();
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         width: { ideal: 1280 },
@@ -353,6 +451,7 @@ function stopCamera() {
 
   cameraVideo.srcObject = null;
   setButtons(false);
+  resetSSM();
 }
 
 
