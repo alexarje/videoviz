@@ -89,6 +89,33 @@ let vertBuffer = null;
 
 function updateStatus(message) {}
 
+function drawVideoContain(ctx, videoEl, w, h, mirror) {
+  // Draw the current video frame into a fixed WxH box using "contain"
+  // so the framing matches CSS `object-fit: contain` (letterbox/pillarbox).
+  const vw = videoEl.videoWidth || w;
+  const vh = videoEl.videoHeight || h;
+  const scale = Math.min(w / vw, h / vh);
+  const dw = Math.round(vw * scale);
+  const dh = Math.round(vh * scale);
+  const dx = Math.floor((w - dw) / 2);
+  const dy = Math.floor((h - dh) / 2);
+
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, w, h);
+
+  if (mirror) {
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(videoEl, w - dx - dw, dy, dw, dh);
+  } else {
+    ctx.drawImage(videoEl, dx, dy, dw, dh);
+  }
+  ctx.restore();
+}
+
 function setButtons(isStreaming) {
   toggleCameraBtn.textContent = isStreaming ? "Stop Camera" : "Start Camera";
 }
@@ -135,14 +162,9 @@ function drawVideogramFrame() {
     return;
   }
 
-  // Mirror the sample if needed (for video only)
-  sampleCtx.save();
-  if (mirrored) {
-    sampleCtx.translate(videoWidth, 0);
-    sampleCtx.scale(-1, 1);
-  }
-  sampleCtx.drawImage(cameraVideo, 0, 0, videoWidth, videoHeight);
-  sampleCtx.restore();
+  // Draw the frame into our fixed processing resolution using "contain",
+  // so the motion canvas matches the regular video framing.
+  drawVideoContain(sampleCtx, cameraVideo, videoWidth, videoHeight, mirrored);
 
   let frame = sampleCtx.getImageData(0, 0, videoWidth, videoHeight);
   let data = frame.data;
