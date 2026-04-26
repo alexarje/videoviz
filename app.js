@@ -73,11 +73,11 @@ let vertBuffer = null;
 
 // --- Self-similarity matrix (SSM) ---
 // Keep this independent of `duration` for performance (N^2 cost).
-const SSM_SIZE = 128;
-const SSM_FEATURE_W = 16;
-const SSM_FEATURE_H = 12;
+const SSM_SIZE = 256;
+const SSM_FEATURE_W = 24;
+const SSM_FEATURE_H = 24;
 const SSM_FEATURE_DIM = SSM_FEATURE_W * SSM_FEATURE_H;
-const SSM_UPDATE_EVERY_N_FRAMES = 3;
+const SSM_UPDATE_EVERY_N_FRAMES = 6;
 let ssmFeatures = [];
 let ssmFrameCounter = 0;
 const ssmSmallCanvas = document.createElement("canvas");
@@ -189,6 +189,8 @@ function drawVideoCover(ctx, videoEl, w, h, mirror) {
 
 function setButtons(isStreaming) {
   toggleCameraBtn.textContent = isStreaming ? "Stop Camera" : "Start Camera";
+  toggleCameraBtn.classList.toggle("is-active", isStreaming);
+  toggleCameraBtn.setAttribute("aria-pressed", String(isStreaming));
 }
 
 function applySampleSize() {
